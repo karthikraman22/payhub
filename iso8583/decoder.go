@@ -6,14 +6,14 @@ import (
 
 // Decoder - ISO 8583 message decoder
 type Decoder struct {
-	HeaderLength   uint32
-	MessageFactory *MessageFactory
+	HeaderLength       uint32
+	ExlcudeHeaderLenth bool
+	MessageFactory     *MessageFactory
 }
 
 // Decode - Decodes the incoming bytes into an ISO 8583 message
 func (dec *Decoder) Decode(data []byte) (*lib8583.IsoStruct, error) {
-
-	isoMsg, err := dec.MessageFactory.Specification.Parse(string(data))
+	isoMsg, err := dec.MessageFactory.DefaultInstance().Parse(string(data))
 	if err != nil {
 		return nil, err
 	}

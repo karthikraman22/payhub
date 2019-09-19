@@ -1,30 +1,32 @@
-package iso8583
+package client
 
 import (
 	"encoding/binary"
 	"io"
 	"net"
 
+	"achuala.in/payhub/iso8583"
+	lib8583 "github.com/mofax/iso8583"
 	log "github.com/sirupsen/logrus"
 )
 
 // ClientHandler to handle the ISO8583 messages
 type ClientHandler struct {
-	Encoder *Encoder
-	Decoder *Decoder
+	Encoder *iso8583.Encoder
+	Decoder *iso8583.Decoder
 }
 
-func recovery() {
+func recovery1() {
 	if r := recover(); r != nil {
-		log.Errorf("recovered from error %v, closing client connection", r)
+		log.Errorf("recovered from error %v, closing server connection", r)
 	}
 }
 
 // Handle - Implements the handling of a new iso8583 client
 func (ch *ClientHandler) Handle(connection *net.TCPConn) {
-	defer recovery()
+	defer recovery1()
 	defer connection.Close()
-	mli := make([]byte, 2)
+	mli := make([]byte, ch.Decoder.HeaderLength)
 	for {
 		n, err := connection.Read(mli)
 		if err == io.EOF {
@@ -56,6 +58,16 @@ func (ch *ClientHandler) handleIncomingMsg(msgData []byte, connection *net.TCPCo
 		log.Errorf("decoding failed : %v", err)
 		return
 	}
-	log.Printf("incoming message from @ %s :  %v", connection.RemoteAddr().String(), isoMsg)
+	log.Printf("incoming message from @ %s :  %v", connection.RemoteAddr().String(), isoMsg.Elements)
 
+}
+
+func (ch *ClientHandler) handleOutgoingMsg(isoMsg *lib8583.IsoStruct, connection *net.TCPConn) error {
+	packedMsg, err := ch.Encoder.Encode(isoMsg)
+	if err != nil {
+		log.Errorf("unable to pack message %v", err)
+		return err
+	}
+	_, err = connection.Write(packedMsg)
+	return err
 }
