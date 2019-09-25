@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"os"
 	"testing"
-	"time"
 
 	"achuala.in/payhub/iso8583/client"
 	runtime "github.com/banzaicloud/logrus-runtime-formatter"
@@ -34,5 +33,4 @@ func TestIso8583Client(*testing.T) {
 		isoMsg.AddField(2, fmt.Sprintf("%016d", rand.Int63n(1e16)))
 		err = client.Send(&isoMsg)
 	}
-	time.Sleep(100 * time.Second)
 }

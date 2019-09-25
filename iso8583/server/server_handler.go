@@ -2,8 +2,11 @@ package server
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io"
+	"math/rand"
 	"net"
+	"time"
 
 	"achuala.in/payhub/iso8583"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +28,9 @@ func recovery() {
 func (ch *ServerHandler) Handle(connection *net.TCPConn) {
 	defer recovery()
 	defer connection.Close()
+	echoTimer := time.NewTicker(time.Second * 10)
+	defer echoTimer.Stop()
+	go ch.sendEcho(echoTimer, connection)
 	mli := make([]byte, ch.Decoder.HeaderLength)
 	for {
 		n, err := connection.Read(mli)
@@ -68,5 +74,32 @@ func (ch *ServerHandler) handleIncomingMsg(msgData []byte, connection *net.TCPCo
 	_, err = connection.Write(packedMsg)
 	if err != nil {
 		log.Errorf("unable to send message %v", err)
+	}
+}
+
+func (ch *ServerHandler) sendEcho(tick *time.Ticker, connection *net.TCPConn) {
+	for t := range tick.C {
+		echoMsg := ch.Decoder.MessageFactory.NewInstance("1804", true)
+		echoMsg.AddField(7, t.Format("MMDDhhmmss"))
+		echoMsg.AddField(7, fmt.Sprintf("%02d%02d%02d%02d%02d",
+			t.Month(), t.Day(),
+			t.Hour(), t.Minute(), t.Second()))
+		echoMsg.AddField(11, fmt.Sprintf("%06d", rand.Int63n(1e16)))
+		echoMsg.AddField(12, fmt.Sprintf("%02d%02d%02d",
+			t.Hour(), t.Minute(), t.Second()))
+		echoMsg.AddField(24, "007")
+		echoMsg.AddField(37, fmt.Sprintf("%012d", rand.Int63n(1e16)))
+		echoMsg.AddField(53, fmt.Sprintf("%016d", rand.Int63n(1e16)))
+		echoMsg.AddField(93, fmt.Sprintf("%05d", rand.Int63n(1e16)))
+		echoMsg.AddField(94, fmt.Sprintf("%07d", rand.Int63n(1e16)))
+		packedMsg, err := ch.Encoder.Encode(echoMsg)
+		if err != nil {
+			log.Errorf("unable to pack message %v", err)
+			return
+		}
+		_, err = connection.Write(packedMsg)
+		if err != nil {
+			log.Errorf("unable to send message %v", err)
+		}
 	}
 }
