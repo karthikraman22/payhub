@@ -5,7 +5,13 @@ import (
 	lib8583 "github.com/mofax/iso8583"
 )
 
-func handleAuthRq(rq *lib8583.IsoStruct, mf *iso8583.MessageFactory) (*lib8583.IsoStruct, error) {
-	rs := mf.NewInstance("1814", true)
+// AuthRqHandler - 0200 handler
+type AuthRqHandler struct {
+	MessageFactory *iso8583.MessageFactory
+}
+
+// Handle -
+func (mh *AuthRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
+	rs := mh.MessageFactory.NewInstance("0210", true)
 	return rs, nil
 }

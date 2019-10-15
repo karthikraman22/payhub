@@ -27,10 +27,9 @@ func TestIso8583Client(*testing.T) {
 		log.Error(err)
 	}
 	rand.Seed(100)
-	for i := 1; i < 100000; i++ {
-		isoMsg := lib8583.NewISOStruct("../spec1987.yml", true)
-		isoMsg.AddMTI("0200")
-		isoMsg.AddField(2, fmt.Sprintf("%016d", rand.Int63n(1e16)))
-		err = client.Send(&isoMsg)
-	}
+	isoMsg := lib8583.NewISOStruct("../spec1987.yml", true)
+	isoMsg.AddMTI("0200")
+	isoMsg.AddField(2, fmt.Sprintf("%016d", rand.Int63n(1e16)))
+	err = client.Send(&isoMsg)
+
 }

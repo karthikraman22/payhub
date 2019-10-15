@@ -6,9 +6,9 @@ import (
 
 // Decoder - ISO 8583 message decoder
 type Decoder struct {
-	HeaderLength       uint32
-	ExlcudeHeaderLenth bool
-	MessageFactory     *MessageFactory
+	HeaderLength        uint32
+	ExlcudeHeaderLength bool
+	MessageFactory      *MessageFactory
 }
 
 // Decode - Decodes the incoming bytes into an ISO 8583 message

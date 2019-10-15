@@ -9,8 +9,8 @@ import (
 
 // Encoder  - Message encoder model
 type Encoder struct {
-	HeaderLength       uint32
-	ExlcudeHeaderLenth bool
+	HeaderLength        uint32
+	ExlcudeHeaderLength bool
 }
 
 // Encode - Encodes the ISO message into ahex bytes
@@ -20,7 +20,7 @@ func (enc *Encoder) Encode(msg *lib8583.IsoStruct) ([]byte, error) {
 		return nil, err
 	}
 	var mli = make([]byte, 2)
-	if enc.ExlcudeHeaderLenth {
+	if enc.ExlcudeHeaderLength {
 		binary.BigEndian.PutUint16(mli, uint16(len(packedData)))
 	} else {
 		binary.BigEndian.PutUint16(mli, uint16(len(packedData)+2))

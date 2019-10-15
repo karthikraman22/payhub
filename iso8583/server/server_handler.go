@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"achuala.in/payhub/iso8583"
+	"achuala.in/payhub/iso8583/server/handlers"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -58,15 +59,16 @@ func (ch *ServerHandler) Handle(connection *net.TCPConn) {
 }
 
 func (ch *ServerHandler) handleIncomingMsg(msgData []byte, connection *net.TCPConn) {
-	isoMsg, err := ch.Decoder.Decode(msgData)
+	rqMsg, err := ch.Decoder.Decode(msgData)
 	if err != nil {
 		log.Errorf("decoding failed : %v", err)
 		return
 	}
-	log.Printf("incoming message from @ %s :  %v", connection.RemoteAddr().String(), isoMsg.Elements)
-	responseMsg := ch.Decoder.MessageFactory.NewInstance("0210", true)
-	responseMsg.AddField(2, isoMsg.Elements.GetElements()[2])
-	packedMsg, err := ch.Encoder.Encode(responseMsg)
+	log.Printf("incoming message from @ %s :  %v", connection.RemoteAddr().String(), rqMsg.Elements)
+	// Extract the message header to get the handler
+	rqHandler, err := handlers.GetHandler(rqMsg.Mti.String(), ch.Decoder.MessageFactory)
+	rsMsg, err := rqHandler.Handle(rqMsg)
+	packedMsg, err := ch.Encoder.Encode(rsMsg)
 	if err != nil {
 		log.Errorf("unable to pack message %v", err)
 		return
