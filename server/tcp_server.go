@@ -45,6 +45,10 @@ func (server *TCPServer) Start() error {
 	return nil
 }
 
+// Accepts the new client connections and dispatches the handling
+// to a new coroutine.
+// TODO: Need to make this as queue based approach to define
+// limits and get visibility.
 func (server *TCPServer) acceptClients(tcpListener *net.TCPListener) {
 	for {
 		clientConn, err := tcpListener.AcceptTCP()

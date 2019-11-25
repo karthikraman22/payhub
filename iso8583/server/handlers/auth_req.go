@@ -11,7 +11,8 @@ type AuthRqHandler struct {
 }
 
 // Handle -
-func (mh *AuthRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
+func (mh AuthRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
 	rs := mh.MessageFactory.NewInstance("0210", true)
+	rs.AddField(2, rq.Elements.GetElements()[2])
 	return rs, nil
 }

@@ -11,7 +11,7 @@ type NetworkRqHandler struct {
 }
 
 // Handle -
-func (mh *NetworkRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
+func (mh NetworkRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
 	rs := mh.MessageFactory.NewInstance("1814", true)
 	return rs, nil
 }

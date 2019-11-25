@@ -68,6 +68,7 @@ func (ch *ClientHandler) handleOutgoingMsg(isoMsg *lib8583.IsoStruct, connection
 		log.Errorf("unable to pack message %v", err)
 		return err
 	}
+	log.Printf("outgoing message to @ %s :  %v", connection.RemoteAddr().String(), isoMsg.Elements)
 	_, err = connection.Write(packedMsg)
 	return err
 }

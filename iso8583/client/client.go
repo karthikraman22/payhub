@@ -25,8 +25,8 @@ func Connect(host, port, specFile string) (*IsoClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	encoder := &iso8583.Encoder{HeaderLength: 2, ExlcudeHeaderLenth: true}
-	decoder := &iso8583.Decoder{HeaderLength: 2, MessageFactory: iso8583.DefaultMessageFactory(specFile), ExlcudeHeaderLenth: true}
+	encoder := &iso8583.Encoder{HeaderLength: 2, ExlcudeHeaderLength: true}
+	decoder := &iso8583.Decoder{HeaderLength: 2, MessageFactory: iso8583.DefaultMessageFactory(specFile), ExlcudeHeaderLength: true}
 	ch := &ClientHandler{Encoder: encoder, Decoder: decoder}
 	go ch.Handle(connection)
 	return &IsoClient{connection: connection, handler: ch, specFile: specFile}, nil

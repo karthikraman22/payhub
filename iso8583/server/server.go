@@ -22,8 +22,8 @@ func (s *IsoServer) Start() error {
 	}
 	encoder := &iso8583.Encoder{HeaderLength: 2, ExlcudeHeaderLength: true}
 	decoder := &iso8583.Decoder{HeaderLength: 2, MessageFactory: iso8583.DefaultMessageFactory(s.SpecFile), ExlcudeHeaderLength: true}
-	ch := &ServerHandler{Encoder: encoder, Decoder: decoder}
-	tcpServer := &server.TCPServer{ListenAddress: listenAddr, ConnHandler: ch}
+	handler := &Handler{Encoder: encoder, Decoder: decoder}
+	tcpServer := &server.TCPServer{ListenAddress: listenAddr, ConnHandler: handler}
 	err = tcpServer.Start()
 	return err
 }

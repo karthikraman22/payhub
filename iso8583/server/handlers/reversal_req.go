@@ -11,7 +11,7 @@ type ReversalRqHandler struct {
 }
 
 // Handle -
-func (mh *ReversalRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
+func (mh ReversalRqHandler) Handle(rq *lib8583.IsoStruct) (*lib8583.IsoStruct, error) {
 	rs := mh.MessageFactory.NewInstance("0410", true)
 	return rs, nil
 }

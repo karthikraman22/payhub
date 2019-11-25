@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"os"
 	"testing"
+	"time"
 
 	"achuala.in/payhub/iso8583/client"
 	runtime "github.com/banzaicloud/logrus-runtime-formatter"
@@ -25,11 +26,12 @@ func TestIso8583Client(*testing.T) {
 	client, err := client.Connect("127.0.0.1", "18081", "../spec1987.yml")
 	if err != nil {
 		log.Error(err)
+		return
 	}
 	rand.Seed(100)
 	isoMsg := lib8583.NewISOStruct("../spec1987.yml", true)
 	isoMsg.AddMTI("0200")
 	isoMsg.AddField(2, fmt.Sprintf("%016d", rand.Int63n(1e16)))
 	err = client.Send(&isoMsg)
-
+	time.Sleep(5 * 15000 * time.Millisecond)
 }
