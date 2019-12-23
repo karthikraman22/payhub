@@ -12,5 +12,5 @@ type PaymentTransport struct {
 
 // InitiatePayment -
 func (pt *PaymentTransport) InitiatePayment(ctx context.Context, req *pb.PaymentRequest) (*pb.PaymentResponse, error) {
-	return nil, nil
+	return &pb.PaymentResponse{TransactionRefId: "1234", Status: "ACCEPTED"}, nil
 }

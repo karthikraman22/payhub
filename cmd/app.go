@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"os"
@@ -23,6 +24,7 @@ import (
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 )
 
 func main() {
@@ -107,16 +109,35 @@ func main() {
 	pb.RegisterPaymentServiceServer(grpcServer, &paymentGrpcService)
 
 	// Start listening to gRPC requests
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			logger.Error("gRPC failed listening for incoming requests",
+				zap.String("port", conf.GetString("app.grpc.port")),
+				zap.String("error", err.Error()),
+			)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		logger.Error("gRPC failed listening for incoming requests",
-			zap.String("port", conf.GetString("app.grpc.port")),
-			zap.String("error", err.Error()),
-		)
+			healthChecker.AddReadinessCheck("gRPC", func() error { return err }) // Permanent, take us down.
+		} else {
+			logger.Info("gRPC is listening for incoming requests", zap.String("port", conf.GetString("app.grpc.port")))
+		}
 
-		healthChecker.AddReadinessCheck("gRPC", func() error { return err }) // Permanent, take us down.
-	} else {
-		logger.Info("gRPC is listening for incoming requests", zap.String("port", conf.GetString("app.grpc.port")))
+	}()
+
+	// Register gRPC as HTTP Gateway
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err = pb.RegisterPaymentServiceHandlerFromEndpoint(ctx, mux, ":"+conf.GetString("app.grpc.port"), opts)
+	if err != nil {
+		logger.Sugar().Errorf("Failed to register Payment Service %+v", err)
 	}
 
+	/*
+	 * Start listening for incoming HTTP requests
+	 * **************************** */
+	logger.Info("Starting..")
+	http.ListenAndServe(":"+conf.GetString("app.port"), mux)
 }

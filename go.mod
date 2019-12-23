@@ -10,7 +10,7 @@ require (
 	github.com/golang/protobuf v1.3.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/grpc-ecosystem/grpc-gateway v1.12.1 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.12.1
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/jaegertracing/jaeger-client-go v2.21.1+incompatible
 	github.com/jaegertracing/jaeger-lib v2.2.0+incompatible

@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 // explicit call to Set > flag > env > config > key/value store > default
@@ -71,10 +72,10 @@ func GetConfig(env string, confFiles map[string]string) (*viper.Viper, error) {
 	conf.AutomaticEnv()                                              // Automatically load Env variables
 
 	// Conf Files
-	//conf.SetConfigType("yaml") 				// We're using yaml
-	conf.SetConfigName(env)                   // Search for a config file that matches our environment
-	conf.AddConfigPath("./src/config/" + env) // look for config in the working directory
-	conf.ReadInConfig()                       // Find and read the config file
+	conf.SetConfigType("yaml")            // We're using yaml
+	conf.SetConfigName(env)               // Search for a config file that matches our environment
+	conf.AddConfigPath("./config/" + env) // look for config in the working directory
+	conf.ReadInConfig()                   // Find and read the config file
 
 	// Read additional files
 	for confFile := range confFiles {

@@ -21,7 +21,7 @@ message PaymentRequest {
   // Json data serialized (blob)
   string invoice_details = 10;
 
-  string addtional_data = 11;
+  string additional_data = 11;
 
   string merchant_order_number = 12;
 
@@ -48,7 +48,7 @@ message PaymentResponse {
 service PaymentService {
     rpc InitiatePayment(PaymentRequest) returns(PaymentResponse) {
       option (google.api.http) = {
-        post : "/payment/initate"
+        post : "/payment/initiate"
         body: "*"
       };
     }
