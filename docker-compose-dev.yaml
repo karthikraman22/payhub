@@ -1,0 +1,22 @@
+version: '3.5'
+services:
+  payhub-server:
+    environment: 
+        - APP_NAME=payhub
+        - APP_PORT=9000
+        - APP_GRPC_PORT=9001
+        - APP_GRPC_HTTP__ROUTE__PREFIX=/v1
+        - APP_REQUEST_TIMEOUT=500
+        - APP_REQUEST_MAX__CONN=30
+        - APP_REQUEST_MAX__VOL_THRESHOLD=20
+        - APP_REQUEST_MAX__SLEEP__WINDOW=5000
+        - APP_REQUEST_MAX__ERR_PER_THRESHOLD=50
+        - BUILD_ENV=development
+        - LOG_LEVEL=debug
+    build:
+      context: .
+      args:
+        build_env: 'development'
+        app_port: 9000
+        app_grpc_port: 9001
+        protobuf_release_tag: '3.11.2'

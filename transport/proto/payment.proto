@@ -5,7 +5,7 @@ package pb;
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 
-message PaymentRequest {
+message InitiatePaymentRq {
   string application_id = 1;
   string merchant_id = 2;
   string sub_application_id = 3;
@@ -39,16 +39,31 @@ message PaymentRequest {
   google.protobuf.Timestamp valid_end_time = 18;
 }
 
-message PaymentResponse {
+message InitiatePaymentRs {
     string transaction_ref_id = 1;
     string status = 2;
 }
 
+message GetPaymentRq {
+  string transaction_ref_id = 1;
+}
+
+message GetPaymentRs {
+  string transaction_ref_id = 1;
+  string status = 2;
+}
+
 // Payment service entry point
 service PaymentService {
-    rpc InitiatePayment(PaymentRequest) returns(PaymentResponse) {
+    rpc InitiatePayment(InitiatePaymentRq) returns(InitiatePaymentRs) {
       option (google.api.http) = {
         post : "/payment/initiate"
+        body: "*"
+      };
+    }
+    rpc GetPayment(GetPaymentRq) returns(GetPaymentRs) {
+      option (google.api.http) = {
+        post : "/payment/get"
         body: "*"
       };
     }

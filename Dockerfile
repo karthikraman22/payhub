@@ -14,7 +14,7 @@ ENV PROTOBUF_RELEASE_TAG $protobuf_release_tag
 # Path
 ENV GOBIN=$GOPATH/bin
 ENV PATH=$PATH:$GOBIN
-WORKDIR ./
+WORKDIR /app
 
 # Protobuf
 RUN apt-get update && \
@@ -44,14 +44,14 @@ RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
 RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
 
 # Copy our code
-ADD ./ src/
+ADD ./ app/
 
 # pkger
 RUN go get -u github.com/markbates/pkger/cmd/pkger
 RUN pkger
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./src/cmd/app.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./cmd/app.go
 
 # Remove embeded .go files, used in case and tested locallydo
 RUN pkger clean
