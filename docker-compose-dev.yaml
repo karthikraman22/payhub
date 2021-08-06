@@ -1,5 +1,61 @@
-version: '3.5'
+version: '3.7'
+networks:
+  main:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.255.0/24
+      driver: default
 services:
+  nats-1:
+    command:
+      - "--debug"
+      - "--cluster"
+      - "nats://0.0.0.0:6222"
+      - "--http_port"
+      - "8222"
+      - "--port"
+      - "4222"
+    image: "nats:latest"
+    networks:
+      - main
+    ports:
+      - "14222:4222"
+      - "18222:8222"
+  nats-2:
+    command:
+      - "--debug"
+      - "--cluster"
+      - "nats://0.0.0.0:6222"
+      - "--http_port"
+      - "8222"
+      - "--port"
+      - "4222"
+      - "--routes"
+      - "nats://nats-1:6222"
+    image: "nats:latest"
+    networks:
+      - main
+    ports:
+      - "24222:4222"
+      - "28222:8222"
+  nats-3:
+    command:
+      - "--debug"
+      - "--cluster"
+      - "nats://0.0.0.0:6222"
+      - "--http_port"
+      - "8222"
+      - "--port"
+      - "4222"
+      - "--routes"
+      - "nats://nats-1:6222"
+    image: "nats:latest"
+    networks:
+      - main
+    ports:
+      - "34222:4222"
+      - "38222:8222"
   payhub-server:
     environment: 
         - APP_NAME=payhub
@@ -20,3 +76,12 @@ services:
         app_port: 9000
         app_grpc_port: 9001
         protobuf_release_tag: '3.11.2'
+    networks:
+      - main
+    ports:
+      - "19000:9000"
+      - "19001:9001"    
+    depends_on:
+        - nats-1
+        - nats-2
+        - nats-3

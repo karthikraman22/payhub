@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
-	"time"
 
-	rtformatter "github.com/banzaicloud/logrus-runtime-formatter"
-	nats "github.com/nats-io/nats.go"
-	log "github.com/sirupsen/logrus"
-	"github.com/vys/go-humanize"
+	"achuala.in/payhub/pbgen/pacs008"
+	"achuala.in/payhub/pbgen/pain001"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/toml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/posflag"
+	flag "github.com/spf13/pflag"
 )
 
 // Reverse returns its argument string reversed rune-wise left to right.
@@ -23,94 +25,49 @@ func Reverse(s string) string {
 	return string(r)
 }
 
-func init() {
-	formatter := rtformatter.Formatter{ChildFormatter: &log.JSONFormatter{}}
-	formatter.Line = true
-	log.SetFormatter(&formatter)
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
-}
 func interruptHandler() {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT)
 	<-ch
-	log.Println("CTRL-C; exiting")
 	os.Exit(0)
 }
 
-func goRuntimeStats() {
-	m := &runtime.MemStats{}
-	log.Print("Hey")
-	for {
-		time.Sleep(2 * time.Second)
-		log.Info("# goroutines: ", runtime.NumGoroutine())
-		runtime.ReadMemStats(m)
-		log.Info("Memory Acquired: ", humanize.Bytes(m.Sys))
-		log.Info("Memory Used    : ", humanize.Bytes(m.Alloc))
-		log.Info("# malloc       : ", m.Mallocs)
-		log.Info("# free         : ", m.Frees)
-		log.Info("GC enabled     : ", m.EnableGC)
-		log.Info("# GC           : ", m.NumGC)
-		log.Info("Last GC time   : ", m.LastGC)
-		log.Info("Next GC        : ", humanize.Bytes(m.NextGC))
-		//runtime.GC()
-	}
-}
+var k = koanf.New(".")
 
 func main() {
-	go goRuntimeStats()
-
-	servers := "nats://localhost:4222, nats://localhost:5222, nats://localhost:6222"
-
-	// Connect to a server
-	nc, err := nats.Connect(servers)
-	if err != nil {
-		log.WithFields(log.Fields{"servers": servers}).Error(err)
+	pain := &pain001.CustomerCreditTransferInitiationRq{}
+	fmt.Printf("pain: %v\n", pain)
+	pacs := &pacs008.FI2FICustomerCreditTransferInitiationRq{}
+	fmt.Printf("pacs: %v\n", pacs)
+	// Use the POSIX compliant pflag lib instead of Go's flag lib.
+	f := flag.NewFlagSet("config", flag.ContinueOnError)
+	f.Usage = func() {
+		fmt.Println(f.FlagUsages())
+		os.Exit(0)
 	}
-	// Simple Publisher
-	err = nc.Publish("foo", []byte("Hello World"))
-	if err != nil {
-		fmt.Print(err)
+	// Path to one or more config files to load into koanf along with some config params.
+	f.StringSlice("conf", []string{"mock/mock.toml"}, "path to one or more .toml config files")
+	f.String("time", "2020-01-01", "a time string")
+	f.String("type", "xxx", "type of the app")
+	f.Parse(os.Args[1:])
+
+	// Load the config files provided in the commandline.
+	cFiles, _ := f.GetStringSlice("conf")
+	for _, c := range cFiles {
+		if err := k.Load(file.Provider(c), toml.Parser()); err != nil {
+			log.Fatalf("error loading file: %v", err)
+		}
 	}
-	// Simple Async Subscriber
-	nc.Subscribe("foo", func(m *nats.Msg) {
-		fmt.Printf("Received a message: %s\n", string(m.Data))
-	})
 
-	// Responding to a request message
-	nc.Subscribe("request", func(m *nats.Msg) {
-		m.Respond([]byte("answer is 42"))
-	})
+	// "time" and "type" may have been loaded from the config file, but
+	// they can still be overridden with the values from the command line.
+	// The bundled posflag.Provider takes a flagset from the spf13/pflag lib.
+	// Passing the Koanf instance to posflag helps it deal with default command
+	// line flag values that are not present in conf maps from previously loaded
+	// providers.
+	if err := k.Load(posflag.Provider(f, ".", k), nil); err != nil {
+		log.Fatalf("error loading config: %v", err)
+	}
 
-	// Simple Sync Subscriber
-	sub, _ := nc.SubscribeSync("foo")
-	m, _ := sub.NextMsg(5000)
-	fmt.Println(m)
-	// Channel Subscriber
-	ch := make(chan *nats.Msg, 64)
-	sub, _ = nc.ChanSubscribe("foo", ch)
-	msg := <-ch
-
-	fmt.Print(msg)
-	// Unsubscribe
-	sub.Unsubscribe()
-
-	// Drain
-	sub.Drain()
-
-	// Requests
-	msg, _ = nc.Request("help", []byte("help me"), 10*time.Millisecond)
-
-	// Replies
-	nc.Subscribe("help", func(m *nats.Msg) {
-		nc.Publish(m.Reply, []byte("I can help!"))
-	})
-
-	// Drain connection (Preferred for responders)
-	// Close() not needed if this is called.
-	nc.Drain()
-
-	// Close connection
-	nc.Close()
-
+	fmt.Println("time is = ", k.String("time"))
 }

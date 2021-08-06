@@ -16,53 +16,22 @@ ENV GOBIN=$GOPATH/bin
 ENV PATH=$PATH:$GOBIN
 WORKDIR /app
 
-# Protobuf
-RUN apt-get update && \
-    apt-get -y install unzip
-RUN curl -OL "https://github.com/google/protobuf/releases/download/v${PROTOBUF_RELEASE_TAG}/protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip" && \
-    unzip "protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip" -d protoc3 && \
-    mv protoc3/bin/* /usr/local/bin/ && \
-    mv protoc3/include/* /usr/local/include/ && \
-    rm -rf protoc3 && \
-    rm protoc-${PROTOBUF_RELEASE_TAG}-linux-x86_64.zip
-
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-RUN go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-
-# Go based task runner
-RUN go get -u github.com/markbates/grift
-
-# Dep
-ADD Gopkg.toml Gopkg.toml
-ADD Gopkg.lock Gopkg.lock
-
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep ensure --vendor-only
-
-# Install the correct protoc-gen-go in the correct version
-RUN go install ./vendor/github.com/golang/protobuf/protoc-gen-go/
-RUN go install ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/
-
 # Copy our code
-ADD ./ app/
+ADD . .
 
-# pkger
-RUN go get -u github.com/markbates/pkger/cmd/pkger
-RUN pkger
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+RUN go mod vendor 
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app ./cmd/app.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o /app1 ./cmd/app.go
 
-# Remove embeded .go files, used in case and tested locallydo
-RUN pkger clean
 
-# From scratch
 FROM scratch
+#FROM alpine:latest
 
-COPY --from=builder /app /app
-COPY --from=builder /usr/local/bin/* /usr/local/bin/
-COPY --from=builder /usr/local/include/* /usr/local/include/
-COPY --from=builder /go/bin/grift /go/bin/grift
-
+COPY --from=builder /app1 /app
+#RUN chmod +x /app
 EXPOSE ${APP_GRPC_PORT} ${APP_PORT}
-CMD /app
+CMD ["/app"]

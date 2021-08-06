@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package pacs008;
+
+option go_package = "achuala.in/payhub/pbgen/pacs008;pacs008";
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+import "proto/header.proto";
+
+message DebitInfo {
+    string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string finInstId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string name = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    double amount = 4 [(validate.rules).double = {gte:0}];
+    map<string, string> tags = 5; 
+}
+
+message CreditInfo {
+    string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string finInstId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string name = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    double amount = 4 [(validate.rules).double = {gte:0}];
+    map<string, string> tags = 5; 
+}
+
+message MxPacs00800110 {
+    string endToEndId = 1 [(validate.rules).string.uuid = true];
+    string initiatingPartyId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string requiredExecutionDate = 3;
+    DebitInfo debitInfo = 4 [(validate.rules).message.required = true];
+    repeated CreditInfo creditInfo = 5 [(validate.rules).repeated.min_items = 1];
+}
+
+
+message FI2FICustomerCreditTransferInitiationRq {
+    header.MxHeader header = 1 [(validate.rules).message.required = true];
+    MxPacs00800110 payload = 2 [(validate.rules).message.required = true];
+}
