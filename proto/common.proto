@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package common;
+
+option go_package = "achuala.in/payhub/pbgen/common;common";
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+
+message Id {
+    OrgId orgId = 1;
+}
+message OrgId {
+    Othr othr = 1;
+}
+message Othr {
+    string id = 1;
+}
+message InitiatingParty {
+    Id id = 1;
+}
+
+message Money {
+    string currency_code = 1;
+    double value = 2;
+}
+
+message PaymentIdentification {
+    string end_to_end_id = 1 [(validate.rules).string.uuid = true];
+    string transaction_id = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 36 }];
+    string uetr = 3 [(validate.rules).string.uuid = true];
+}
+
+message PaymentTypeInformation {
+    string service_level = 1;
+    string local_instrument = 2;
+    string payment_channel = 3;
+}

@@ -224,12 +224,100 @@ var _ interface {
 	ErrorName() string
 } = CreditInfoValidationError{}
 
+// Validate checks the field values on MxPain001Hdr with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *MxPain001Hdr) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	// no validation rules for MsgId
+
+	if m.GetCreDtTm() == nil {
+		return MxPain001HdrValidationError{
+			field:  "CreDtTm",
+			reason: "value is required",
+		}
+	}
+
+	// no validation rules for NbOfTxs
+
+	// no validation rules for CtrlSum
+
+	return nil
+}
+
+// MxPain001HdrValidationError is the validation error returned by
+// MxPain001Hdr.Validate if the designated constraints aren't met.
+type MxPain001HdrValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e MxPain001HdrValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e MxPain001HdrValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e MxPain001HdrValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e MxPain001HdrValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e MxPain001HdrValidationError) ErrorName() string { return "MxPain001HdrValidationError" }
+
+// Error satisfies the builtin error interface
+func (e MxPain001HdrValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sMxPain001Hdr.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = MxPain001HdrValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = MxPain001HdrValidationError{}
+
 // Validate checks the field values on MxPain00100110 with the rules defined in
 // the proto definition for this message. If any rules are violated, an error
 // is returned.
 func (m *MxPain00100110) Validate() error {
 	if m == nil {
 		return nil
+	}
+
+	if v, ok := interface{}(m.GetGrpHdr()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MxPain00100110ValidationError{
+				field:  "GrpHdr",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if err := m._validateUuid(m.GetEndToEndId()); err != nil {
@@ -378,17 +466,17 @@ func (m *CustomerCreditTransferInitiationRq) Validate() error {
 		}
 	}
 
-	if m.GetPayload() == nil {
+	if m.GetBody() == nil {
 		return CustomerCreditTransferInitiationRqValidationError{
-			field:  "Payload",
+			field:  "Body",
 			reason: "value is required",
 		}
 	}
 
-	if v, ok := interface{}(m.GetPayload()).(interface{ Validate() error }); ok {
+	if v, ok := interface{}(m.GetBody()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
 			return CustomerCreditTransferInitiationRqValidationError{
-				field:  "Payload",
+				field:  "Body",
 				reason: "embedded message failed validation",
 				cause:  err,
 			}

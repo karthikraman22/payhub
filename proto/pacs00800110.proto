@@ -6,34 +6,45 @@ option go_package = "achuala.in/payhub/pbgen/pacs008;pacs008";
 
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "proto/header.proto";
+import "proto/bah00100102.proto";
+import "proto/common.proto";
 
 message DebitInfo {
-    string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    string finInstId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string account_id = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string fin_inst_id = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
     string name = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    double amount = 4 [(validate.rules).double = {gte:0}];
+    common.Money amount = 4 [(validate.rules).message.required = true];
     map<string, string> tags = 5; 
 }
 
 message CreditInfo {
-    string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    string finInstId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string account_id = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string fin_inst_id = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
     string name = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    double amount = 4 [(validate.rules).double = {gte:0}];
+    common.Money amount = 4 [(validate.rules).message.required = true];
     map<string, string> tags = 5; 
 }
 
+message GroupHeader {
+    string msg_id = 1 [(validate.rules).string.uuid = true];
+    google.protobuf.Timestamp created_datetime = 2 [(validate.rules).timestamp.required = true];
+    uint32 number_of_txns = 3;
+    common.Money total_settlement_amount = 4;
+    string settlement_method = 5;
+}
+
+message CreditTransferInformation {
+    GroupHeader group_header = 1;
+    common.PaymentIdentification payment_id = 2 [(validate.rules).message.required = true];
+    common.PaymentTypeInformation payment_type = 3 [(validate.rules).message.required = true];
+    common.Money settlement_amount = 4 [(validate.rules).message.required = true];
+    DebitInfo debitInfo = 5 [(validate.rules).message.required = true];
+    repeated CreditInfo creditInfo = 6 [(validate.rules).repeated.min_items = 1];
+}
+
+
 message MxPacs00800110 {
-    string endToEndId = 1 [(validate.rules).string.uuid = true];
-    string initiatingPartyId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    string requiredExecutionDate = 3;
-    DebitInfo debitInfo = 4 [(validate.rules).message.required = true];
-    repeated CreditInfo creditInfo = 5 [(validate.rules).repeated.min_items = 1];
+    bah001.MxBah00100102 header = 1 [(validate.rules).message.required = true];
+    CreditTransferInformation body = 2 [(validate.rules).message.required = true];
 }
 
-
-message FI2FICustomerCreditTransferInitiationRq {
-    header.MxHeader header = 1 [(validate.rules).message.required = true];
-    MxPacs00800110 payload = 2 [(validate.rules).message.required = true];
-}

@@ -6,7 +6,7 @@ option go_package = "achuala.in/payhub/pbgen/pain001;pain001";
 
 import "google/protobuf/timestamp.proto";
 import "validate/validate.proto";
-import "proto/header.proto";
+import "proto/bah00100102.proto";
 
 message DebitInfo {
     string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
@@ -24,16 +24,24 @@ message CreditInfo {
     map<string, string> tags = 5; 
 }
 
+message MxPain001Hdr {
+    string msgId = 1;
+    google.protobuf.Timestamp creDtTm = 2 [(validate.rules).timestamp.required = true];
+    uint32 nbOfTxs = 3;
+    double ctrlSum = 4;
+}
+
 message MxPain00100110 {
-    string endToEndId = 1 [(validate.rules).string.uuid = true];
-    string initiatingPartyId = 2 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
-    string requiredExecutionDate = 3;
-    DebitInfo debitInfo = 4 [(validate.rules).message.required = true];
-    repeated CreditInfo creditInfo = 5 [(validate.rules).repeated.min_items = 1];
+    MxPain001Hdr grpHdr = 1;
+    string endToEndId = 2 [(validate.rules).string.uuid = true];
+    string initiatingPartyId = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string requiredExecutionDate = 4;
+    DebitInfo debitInfo = 5 [(validate.rules).message.required = true];
+    repeated CreditInfo creditInfo = 6 [(validate.rules).repeated.min_items = 1];
 }
 
 
 message CustomerCreditTransferInitiationRq {
-    header.MxHeader header = 1 [(validate.rules).message.required = true];
-    MxPain00100110 payload = 2 [(validate.rules).message.required = true];
+    bah001.MxBah00100102 header = 1 [(validate.rules).message.required = true];
+    MxPain00100110 body = 2 [(validate.rules).message.required = true];
 }

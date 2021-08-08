@@ -37,8 +37,9 @@ var k = koanf.New(".")
 func main() {
 	pain := &pain001.CustomerCreditTransferInitiationRq{}
 	fmt.Printf("pain: %v\n", pain)
-	pacs := &pacs008.FI2FICustomerCreditTransferInitiationRq{}
-	fmt.Printf("pacs: %v\n", pacs)
+	pacs := &pacs008.MxPacs00800110{}
+	err := pacs.Validate()
+	fmt.Printf("pacs: %v\n", err)
 	// Use the POSIX compliant pflag lib instead of Go's flag lib.
 	f := flag.NewFlagSet("config", flag.ContinueOnError)
 	f.Usage = func() {

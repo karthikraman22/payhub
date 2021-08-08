@@ -43,9 +43,9 @@ func (m *DebitInfo) Validate() error {
 		return nil
 	}
 
-	if l := len(m.GetAccount()); l < 1 || l > 35 {
+	if l := len(m.GetAccountId()); l < 1 || l > 35 {
 		return DebitInfoValidationError{
-			field:  "Account",
+			field:  "AccountId",
 			reason: "value length must be between 1 and 35 bytes, inclusive",
 		}
 	}
@@ -64,10 +64,20 @@ func (m *DebitInfo) Validate() error {
 		}
 	}
 
-	if m.GetAmount() < 0 {
+	if m.GetAmount() == nil {
 		return DebitInfoValidationError{
 			field:  "Amount",
-			reason: "value must be greater than or equal to 0",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetAmount()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return DebitInfoValidationError{
+				field:  "Amount",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
 	}
 
@@ -137,9 +147,9 @@ func (m *CreditInfo) Validate() error {
 		return nil
 	}
 
-	if l := len(m.GetAccount()); l < 1 || l > 35 {
+	if l := len(m.GetAccountId()); l < 1 || l > 35 {
 		return CreditInfoValidationError{
-			field:  "Account",
+			field:  "AccountId",
 			reason: "value length must be between 1 and 35 bytes, inclusive",
 		}
 	}
@@ -158,10 +168,20 @@ func (m *CreditInfo) Validate() error {
 		}
 	}
 
-	if m.GetAmount() < 0 {
+	if m.GetAmount() == nil {
 		return CreditInfoValidationError{
 			field:  "Amount",
-			reason: "value must be greater than or equal to 0",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetAmount()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreditInfoValidationError{
+				field:  "Amount",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
 	}
 
@@ -224,33 +244,179 @@ var _ interface {
 	ErrorName() string
 } = CreditInfoValidationError{}
 
-// Validate checks the field values on MxPacs00800110 with the rules defined in
+// Validate checks the field values on GroupHeader with the rules defined in
 // the proto definition for this message. If any rules are violated, an error
 // is returned.
-func (m *MxPacs00800110) Validate() error {
+func (m *GroupHeader) Validate() error {
 	if m == nil {
 		return nil
 	}
 
-	if err := m._validateUuid(m.GetEndToEndId()); err != nil {
-		return MxPacs00800110ValidationError{
-			field:  "EndToEndId",
+	if err := m._validateUuid(m.GetMsgId()); err != nil {
+		return GroupHeaderValidationError{
+			field:  "MsgId",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}
 	}
 
-	if l := len(m.GetInitiatingPartyId()); l < 1 || l > 35 {
-		return MxPacs00800110ValidationError{
-			field:  "InitiatingPartyId",
-			reason: "value length must be between 1 and 35 bytes, inclusive",
+	if m.GetCreatedDatetime() == nil {
+		return GroupHeaderValidationError{
+			field:  "CreatedDatetime",
+			reason: "value is required",
 		}
 	}
 
-	// no validation rules for RequiredExecutionDate
+	// no validation rules for NumberOfTxns
+
+	if v, ok := interface{}(m.GetTotalSettlementAmount()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return GroupHeaderValidationError{
+				field:  "TotalSettlementAmount",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for SettlementMethod
+
+	return nil
+}
+
+func (m *GroupHeader) _validateUuid(uuid string) error {
+	if matched := _pacs_00800110_uuidPattern.MatchString(uuid); !matched {
+		return errors.New("invalid uuid format")
+	}
+
+	return nil
+}
+
+// GroupHeaderValidationError is the validation error returned by
+// GroupHeader.Validate if the designated constraints aren't met.
+type GroupHeaderValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GroupHeaderValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GroupHeaderValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GroupHeaderValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GroupHeaderValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GroupHeaderValidationError) ErrorName() string { return "GroupHeaderValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GroupHeaderValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGroupHeader.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GroupHeaderValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GroupHeaderValidationError{}
+
+// Validate checks the field values on CreditTransferInformation with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, an error is returned.
+func (m *CreditTransferInformation) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if v, ok := interface{}(m.GetGroupHeader()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreditTransferInformationValidationError{
+				field:  "GroupHeader",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetPaymentId() == nil {
+		return CreditTransferInformationValidationError{
+			field:  "PaymentId",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetPaymentId()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreditTransferInformationValidationError{
+				field:  "PaymentId",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetPaymentType() == nil {
+		return CreditTransferInformationValidationError{
+			field:  "PaymentType",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetPaymentType()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreditTransferInformationValidationError{
+				field:  "PaymentType",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetSettlementAmount() == nil {
+		return CreditTransferInformationValidationError{
+			field:  "SettlementAmount",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetSettlementAmount()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreditTransferInformationValidationError{
+				field:  "SettlementAmount",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if m.GetDebitInfo() == nil {
-		return MxPacs00800110ValidationError{
+		return CreditTransferInformationValidationError{
 			field:  "DebitInfo",
 			reason: "value is required",
 		}
@@ -258,7 +424,7 @@ func (m *MxPacs00800110) Validate() error {
 
 	if v, ok := interface{}(m.GetDebitInfo()).(interface{ Validate() error }); ok {
 		if err := v.Validate(); err != nil {
-			return MxPacs00800110ValidationError{
+			return CreditTransferInformationValidationError{
 				field:  "DebitInfo",
 				reason: "embedded message failed validation",
 				cause:  err,
@@ -267,7 +433,7 @@ func (m *MxPacs00800110) Validate() error {
 	}
 
 	if len(m.GetCreditInfo()) < 1 {
-		return MxPacs00800110ValidationError{
+		return CreditTransferInformationValidationError{
 			field:  "CreditInfo",
 			reason: "value must contain at least 1 item(s)",
 		}
@@ -278,7 +444,7 @@ func (m *MxPacs00800110) Validate() error {
 
 		if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				return MxPacs00800110ValidationError{
+				return CreditTransferInformationValidationError{
 					field:  fmt.Sprintf("CreditInfo[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
@@ -291,9 +457,102 @@ func (m *MxPacs00800110) Validate() error {
 	return nil
 }
 
-func (m *MxPacs00800110) _validateUuid(uuid string) error {
-	if matched := _pacs_00800110_uuidPattern.MatchString(uuid); !matched {
-		return errors.New("invalid uuid format")
+// CreditTransferInformationValidationError is the validation error returned by
+// CreditTransferInformation.Validate if the designated constraints aren't met.
+type CreditTransferInformationValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreditTransferInformationValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreditTransferInformationValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreditTransferInformationValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreditTransferInformationValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreditTransferInformationValidationError) ErrorName() string {
+	return "CreditTransferInformationValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreditTransferInformationValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreditTransferInformation.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreditTransferInformationValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreditTransferInformationValidationError{}
+
+// Validate checks the field values on MxPacs00800110 with the rules defined in
+// the proto definition for this message. If any rules are violated, an error
+// is returned.
+func (m *MxPacs00800110) Validate() error {
+	if m == nil {
+		return nil
+	}
+
+	if m.GetHeader() == nil {
+		return MxPacs00800110ValidationError{
+			field:  "Header",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetHeader()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MxPacs00800110ValidationError{
+				field:  "Header",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if m.GetBody() == nil {
+		return MxPacs00800110ValidationError{
+			field:  "Body",
+			reason: "value is required",
+		}
+	}
+
+	if v, ok := interface{}(m.GetBody()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return MxPacs00800110ValidationError{
+				field:  "Body",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	return nil
@@ -352,105 +611,3 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = MxPacs00800110ValidationError{}
-
-// Validate checks the field values on FI2FICustomerCreditTransferInitiationRq
-// with the rules defined in the proto definition for this message. If any
-// rules are violated, an error is returned.
-func (m *FI2FICustomerCreditTransferInitiationRq) Validate() error {
-	if m == nil {
-		return nil
-	}
-
-	if m.GetHeader() == nil {
-		return FI2FICustomerCreditTransferInitiationRqValidationError{
-			field:  "Header",
-			reason: "value is required",
-		}
-	}
-
-	if v, ok := interface{}(m.GetHeader()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return FI2FICustomerCreditTransferInitiationRqValidationError{
-				field:  "Header",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	if m.GetPayload() == nil {
-		return FI2FICustomerCreditTransferInitiationRqValidationError{
-			field:  "Payload",
-			reason: "value is required",
-		}
-	}
-
-	if v, ok := interface{}(m.GetPayload()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return FI2FICustomerCreditTransferInitiationRqValidationError{
-				field:  "Payload",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	return nil
-}
-
-// FI2FICustomerCreditTransferInitiationRqValidationError is the validation
-// error returned by FI2FICustomerCreditTransferInitiationRq.Validate if the
-// designated constraints aren't met.
-type FI2FICustomerCreditTransferInitiationRqValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) ErrorName() string {
-	return "FI2FICustomerCreditTransferInitiationRqValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e FI2FICustomerCreditTransferInitiationRqValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sFI2FICustomerCreditTransferInitiationRq.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = FI2FICustomerCreditTransferInitiationRqValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = FI2FICustomerCreditTransferInitiationRqValidationError{}

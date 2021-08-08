@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package bah001;
+
+option go_package = "achuala.in/payhub/pbgen/bah001;bah001";
+
+import "google/protobuf/timestamp.proto";
+import "validate/validate.proto";
+
+message MxBah00100102 {
+    string msgId = 1 [(validate.rules).string.uuid = true];
+    google.protobuf.Timestamp createdTimestamp = 2 [(validate.rules).timestamp.required = true];
+    string from = 3 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string to = 4 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string functionCode =5 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string businessService =  6 [(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
+    string signature = 7;
+}
