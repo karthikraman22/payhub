@@ -14,6 +14,13 @@ pbgen:
 	--validate_out="module=${PACKAGE},lang=go:." \
 	./proto/*.proto*
 
+pbgen2:
+	mkdir -p pbgen
+	docker run -it --rm -v"${PWD}":/payhub achuala.in/pb-dev:latest  --proto_path=/payhub/proto \
+	--go_out="module=${PACKAGE}:." \
+	--validate_out="module=${PACKAGE},lang=go:." \
+	common.proto bah00100102.proto pacs00800110.proto pain00100110.proto
+
 clean:
 	rm -rf pbgen
 #############################

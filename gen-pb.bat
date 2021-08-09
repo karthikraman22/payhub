@@ -1,0 +1,2 @@
+mkdir -p pbgen
+docker run -it --rm -v"${PWD}":/payhub achuala.in/pb-gen:latest  --proto_path=/payhub/proto --go_out="module=achuala.in/payhub:/payhub" --validate_out="module=achuala.in/payhub,lang=go:/payhub" common.proto bah00100102.proto pacs00800110.proto pain00100110.proto

@@ -5,9 +5,9 @@ package pacs008;
 option go_package = "achuala.in/payhub/pbgen/pacs008;pacs008";
 
 import "google/protobuf/timestamp.proto";
-import "validate/validate.proto";
-import "proto/bah00100102.proto";
-import "proto/common.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+import "bah00100102.proto";
+import "common.proto";
 
 message DebitInfo {
     string account_id = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];

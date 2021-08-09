@@ -5,8 +5,8 @@ package pain001;
 option go_package = "achuala.in/payhub/pbgen/pain001;pain001";
 
 import "google/protobuf/timestamp.proto";
-import "validate/validate.proto";
-import "proto/bah00100102.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
+import "bah00100102.proto";
 
 message DebitInfo {
     string account = 1[(validate.rules).string = { min_bytes : 1, max_bytes : 35 }];
@@ -45,3 +45,9 @@ message CustomerCreditTransferInitiationRq {
     bah001.MxBah00100102 header = 1 [(validate.rules).message.required = true];
     MxPain00100110 body = 2 [(validate.rules).message.required = true];
 }
+
+message CustomerCreditTransferInitiationRs {
+    string status = 1;
+    string pauhub_id = 2;
+}
+

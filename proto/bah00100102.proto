@@ -5,7 +5,7 @@ package bah001;
 option go_package = "achuala.in/payhub/pbgen/bah001;bah001";
 
 import "google/protobuf/timestamp.proto";
-import "validate/validate.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 message MxBah00100102 {
     string msgId = 1 [(validate.rules).string.uuid = true];

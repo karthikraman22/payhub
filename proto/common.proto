@@ -5,7 +5,7 @@ package common;
 option go_package = "achuala.in/payhub/pbgen/common;common";
 
 import "google/protobuf/timestamp.proto";
-import "validate/validate.proto";
+import "github.com/envoyproxy/protoc-gen-validate/validate/validate.proto";
 
 
 message Id {

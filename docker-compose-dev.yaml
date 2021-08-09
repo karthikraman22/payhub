@@ -1,87 +1,18 @@
 version: '3.7'
-networks:
-  main:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.255.0/24
-      driver: default
 services:
-  nats-1:
-    command:
-      - "--debug"
-      - "--cluster"
-      - "nats://0.0.0.0:6222"
-      - "--http_port"
-      - "8222"
-      - "--port"
-      - "4222"
-    image: "nats:latest"
-    networks:
-      - main
-    ports:
-      - "14222:4222"
-      - "18222:8222"
-  nats-2:
-    command:
-      - "--debug"
-      - "--cluster"
-      - "nats://0.0.0.0:6222"
-      - "--http_port"
-      - "8222"
-      - "--port"
-      - "4222"
-      - "--routes"
-      - "nats://nats-1:6222"
-    image: "nats:latest"
-    networks:
-      - main
-    ports:
-      - "24222:4222"
-      - "28222:8222"
-  nats-3:
-    command:
-      - "--debug"
-      - "--cluster"
-      - "nats://0.0.0.0:6222"
-      - "--http_port"
-      - "8222"
-      - "--port"
-      - "4222"
-      - "--routes"
-      - "nats://nats-1:6222"
-    image: "nats:latest"
-    networks:
-      - main
-    ports:
-      - "34222:4222"
-      - "38222:8222"
-  payhub-server:
+  payhub:
     environment: 
         - APP_NAME=payhub
         - APP_PORT=9000
-        - APP_GRPC_PORT=9001
-        - APP_GRPC_HTTP__ROUTE__PREFIX=/v1
-        - APP_REQUEST_TIMEOUT=500
-        - APP_REQUEST_MAX__CONN=30
-        - APP_REQUEST_MAX__VOL_THRESHOLD=20
-        - APP_REQUEST_MAX__SLEEP__WINDOW=5000
-        - APP_REQUEST_MAX__ERR_PER_THRESHOLD=50
         - BUILD_ENV=development
         - LOG_LEVEL=debug
     build:
+      dockerfile: Dockerfile.dev
       context: .
       args:
         build_env: 'development'
         app_port: 9000
-        app_grpc_port: 9001
-        protobuf_release_tag: '3.11.2'
-    networks:
-      - main
+        protobuf_release_tag: '3.17.3'
     ports:
       - "19000:9000"
       - "19001:9001"    
-    depends_on:
-        - nats-1
-        - nats-2
-        - nats-3
