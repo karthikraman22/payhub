@@ -521,6 +521,13 @@ func (m *MxPacs00800110) Validate() error {
 		return nil
 	}
 
+	if m.GetFunctionCode() != "FIToFICstmrCdtTrf" {
+		return MxPacs00800110ValidationError{
+			field:  "FunctionCode",
+			reason: "value must equal FIToFICstmrCdtTrf",
+		}
+	}
+
 	if m.GetHeader() == nil {
 		return MxPacs00800110ValidationError{
 			field:  "Header",

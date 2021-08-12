@@ -44,7 +44,8 @@ message CreditTransferInformation {
 
 
 message MxPacs00800110 {
-    bah001.MxBah00100102 header = 1 [(validate.rules).message.required = true];
-    CreditTransferInformation body = 2 [(validate.rules).message.required = true];
+    string function_code = 1 [(validate.rules).string.const = "FIToFICstmrCdtTrf"];
+    bah001.MxBah00100102 header = 2 [(validate.rules).message.required = true];
+    CreditTransferInformation body = 3 [(validate.rules).message.required = true];
 }
 
